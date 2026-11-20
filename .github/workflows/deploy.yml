@@ -23,6 +23,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Validate V2 preview JavaScript
+        run: |
+          node --check v2-preview.js
+          test -s v2-preview.html
+          test -s v2-preview.css
+      - name: Smoke-test preview page
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium || true)"
+          if [ -n "$CHROME" ]; then
+            python3 -m http.server 9080 >/tmp/preview-server.log 2>&1 &
+            SERVER_PID=$!
+            trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+            sleep 2
+            "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --virtual-time-budget=2000 --dump-dom \
+              "http://127.0.0.1:9080/v2-preview.html" > /tmp/preview-dom.html 2>/tmp/chrome-stderr.log
+            grep -q "让智慧，融入每一次" /tmp/preview-dom.html
+            grep -q 'class="nav-item' /tmp/preview-dom.html
+            echo "V2 preview rendered without blank main content."
+          else
+            echo "Headless Chrome unavailable; static syntax validation still passed."
+          fi
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
