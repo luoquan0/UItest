@@ -32,6 +32,9 @@ jobs:
           grep -q "GULANGYU" index.html
           grep -q 'id="spots"' index.html
           grep -q 'id="gallery"' index.html
+          grep -q 'id="island-story"' index.html
+          grep -q 'id="hero-particles"' index.html
+          grep -q 'data-story-image' index.html
       - name: Smoke-test rendered homepage
         run: |
           CHROME="$(command -v google-chrome || command -v chromium || true)"
@@ -46,6 +49,7 @@ jobs:
             grep -q "鼓浪屿" /tmp/gulangyu-dom.html
             grep -q "必游景点" /tmp/gulangyu-dom.html
             grep -q "游客服务" /tmp/gulangyu-dom.html
+            grep -q "CHAPTER 01" /tmp/gulangyu-dom.html
             echo "Gulangyu homepage rendered with core sections."
           else
             echo "Headless Chrome unavailable; static syntax validation passed."
