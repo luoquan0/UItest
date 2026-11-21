@@ -50,10 +50,21 @@ jobs:
             grep -q "必游景点" /tmp/gulangyu-dom.html
             grep -q "游客服务" /tmp/gulangyu-dom.html
             grep -q "CHAPTER 01" /tmp/gulangyu-dom.html
-            echo "Gulangyu homepage rendered with core sections."
+            "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
+              --virtual-time-budget=3500 --hide-scrollbars --window-size=1440,1000 \
+              --screenshot="$RUNNER_TEMP/gulangyu-homepage.png" \
+              "http://127.0.0.1:9080/" >/tmp/chrome-shot.log 2>&1
+            test -s "$RUNNER_TEMP/gulangyu-homepage.png"
+            echo "Gulangyu homepage rendered with core sections and screenshot captured."
           else
             echo "Headless Chrome unavailable; static syntax validation passed."
           fi
+      - name: Upload visual QA screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: gulangyu-visual-qa
+          path: ${{ runner.temp }}/gulangyu-homepage.png
+          if-no-files-found: warn
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
