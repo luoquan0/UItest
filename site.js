@@ -185,4 +185,101 @@ if(story&&!reduceMotion&&window.matchMedia("(pointer:fine)").matches){
   const da=$(".depth-a"),db=$(".depth-b");if(da)da.style.transform="";if(db)db.style.transform="";
  });
 }
+
+/* V2: island map, horizontal scroll film, ocean shimmer and opt-in ambient sound */
+const mapPlaces=[
+ {eyebrow:"01 / HIGH POINT",name:"日光岩",copy:"登高望远，感受岛屿与海湾的开阔视野。这里是认识鼓浪屿地貌与城市天际线的经典视角。"},
+ {eyebrow:"02 / GARDEN",name:"菽庄花园",copy:"园林与海景相映成趣，在曲径、亭台与临海空间之间，感受岛屿园林的雅致。"},
+ {eyebrow:"03 / MUSIC",name:"钢琴博物馆",copy:"透过珍贵钢琴与音乐文化展陈，认识鼓浪屿作为音乐之岛的历史记忆。"},
+ {eyebrow:"04 / HERITAGE",name:"历史建筑群",copy:"多元建筑风格在岛上交汇，拱廊、红瓦与庭院共同留下历史国际社区的独特风貌。"}
+];
+$$("[data-map]").forEach(pin=>pin.addEventListener("click",()=>{
+ const index=Number(pin.dataset.map),place=mapPlaces[index],detail=$("#map-detail");
+ $$("[data-map]").forEach(p=>p.classList.toggle("active",p===pin));
+ if(!detail||!place)return;
+ detail.innerHTML='<p class="overline">'+place.eyebrow+'</p><h3>'+place.name+'</h3><p>'+place.copy+'</p><a href="#spots">查看景点介绍 ↗</a><small>位置与步行路线为艺术示意，请以现场导览为准。</small>';
+ detail.animate([{opacity:.45,transform:"translateY(8px)"},{opacity:1,transform:"translateY(0)"}],{duration:380,easing:"cubic-bezier(.16,1,.3,1)"});
+}));
+const film=$("#island-film"),filmTrack=$("#horizontal-track"),filmFill=$("#film-progress-fill");
+let filmBusy=false;
+function updateFilm(){
+ if(!film||!filmTrack||window.innerWidth<=760||reduceMotion)return;
+ const rect=film.getBoundingClientRect(),distance=film.offsetHeight-window.innerHeight;
+ const progress=Math.max(0,Math.min(1,-rect.top/Math.max(1,distance)));
+ const max=Math.max(0,filmTrack.scrollWidth-window.innerWidth);
+ filmTrack.style.transform="translate3d("+(-max*progress)+"px,0,0)";
+ if(filmFill)filmFill.style.width=(progress*100)+"%";
+ filmBusy=false;
+}
+if(film&&!reduceMotion){
+ window.addEventListener("scroll",()=>{if(!filmBusy){requestAnimationFrame(updateFilm);filmBusy=true}},{passive:true});
+ window.addEventListener("resize",updateFilm,{passive:true});
+ updateFilm();
+}
+const water=$("#water-canvas");
+if(water&&!reduceMotion){
+ const ctx=water.getContext("2d");
+ if(ctx){
+  let ww=0,hh=0,dpr=1,raf=0,t=0;
+  function resizeWater(){
+   const r=hero.getBoundingClientRect();ww=r.width;hh=r.height;dpr=Math.min(window.devicePixelRatio||1,1.5);
+   water.width=Math.round(ww*dpr);water.height=Math.round(hh*dpr);water.style.width=ww+"px";water.style.height=hh+"px";ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function paintWater(){
+   if(document.hidden){raf=0;return}
+   t+=.006;ctx.clearRect(0,0,ww,hh);
+   const horizon=hh*.67;
+   for(let row=0;row<13;row++){
+    const y=horizon+row*hh*.027;
+    ctx.beginPath();
+    for(let x=0;x<=ww;x+=12){
+     const perspective=(row+1)/13;
+     const wave=Math.sin(x*.012+ t*2.2+row*.58)*2.1+Math.sin(x*.025-t+row)*.8;
+     const yy=y+wave*perspective*2.6;
+     if(x===0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);
+    }
+    const alpha=.018+row*.0025;
+    ctx.strokeStyle="rgba(244,216,170,"+alpha+")";ctx.lineWidth=.6+row*.035;ctx.stroke();
+   }
+   for(let i=0;i<18;i++){
+    const x=(i*137+t*18)%Math.max(1,ww),y=horizon+((i*47+Math.sin(t+i)*12)%Math.max(1,hh-horizon));
+    ctx.fillStyle="rgba(255,225,177,"+(0.08+0.08*Math.sin(t*2+i))+")";ctx.fillRect(x,y,1.5,1);
+   }
+   raf=requestAnimationFrame(paintWater);
+  }
+  resizeWater();paintWater();window.addEventListener("resize",resizeWater,{passive:true});
+  document.addEventListener("visibilitychange",()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf)paintWater()});
+ }
+}
+let audioContext=null,audioNodes=[],audioOn=false;
+function startIslandSound(){
+ const Ctx=window.AudioContext||window.webkitAudioContext;
+ if(!Ctx){toast("当前浏览器不支持网页音效");return}
+ if(!audioContext)audioContext=new Ctx();
+ audioContext.resume().then(()=>{
+  if(audioOn)return;
+  const master=audioContext.createGain();master.gain.value=.0001;master.connect(audioContext.destination);
+  const now=audioContext.currentTime;master.gain.setTargetAtTime(.11,now,1.1);
+  const notes=[220,261.63,329.63,392];
+  notes.forEach((hz,i)=>{
+   const osc=audioContext.createOscillator(),gain=audioContext.createGain(),filter=audioContext.createBiquadFilter();
+   osc.type="sine";osc.frequency.value=hz;gain.gain.value=[.13,.09,.065,.045][i];filter.type="lowpass";filter.frequency.value=760;
+   osc.connect(filter);filter.connect(gain);gain.connect(master);osc.start();audioNodes.push(osc,gain,filter);
+  });
+  const buffer=audioContext.createBuffer(1,audioContext.sampleRate*2,audioContext.sampleRate),data=buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.12;
+  const noise=audioContext.createBufferSource(),low=audioContext.createBiquadFilter(),noiseGain=audioContext.createGain();
+  noise.buffer=buffer;noise.loop=true;low.type="lowpass";low.frequency.value=330;noiseGain.gain.value=.16;
+  noise.connect(low);low.connect(noiseGain);noiseGain.connect(master);noise.start();audioNodes.push(noise,low,noiseGain,master);
+  audioOn=true;const b=$("#sound-toggle");if(b){b.classList.add("playing");b.setAttribute("aria-pressed","true")}const label=$("#sound-label");if(label)label.textContent="关闭岛屿声音";
+ }).catch(()=>toast("音频启动失败，请再次点击"));
+}
+function stopIslandSound(){
+ if(!audioContext||!audioOn)return;
+ const master=audioNodes[audioNodes.length-1],now=audioContext.currentTime;
+ if(master&&master.gain)master.gain.setTargetAtTime(.0001,now,.18);
+ setTimeout(()=>{audioNodes.forEach(n=>{try{if(n.stop)n.stop()}catch(e){}try{n.disconnect()}catch(e){}});audioNodes=[];audioOn=false;const b=$("#sound-toggle");if(b){b.classList.remove("playing");b.setAttribute("aria-pressed","false")}const label=$("#sound-label");if(label)label.textContent="开启岛屿声音"},900);
+}
+$("#sound-toggle")&&$("#sound-toggle").addEventListener("click",()=>audioOn?stopIslandSound():startIslandSound());
+
 })();
