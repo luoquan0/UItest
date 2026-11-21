@@ -55,7 +55,7 @@ jobs:
             "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
               --virtual-time-budget=6500 --hide-scrollbars --window-size=1440,1000 \
               --screenshot="$RUNNER_TEMP/gulangyu-homepage.png" \
-              "http://127.0.0.1:9080/" >/tmp/chrome-shot.log 2>&1
+              "http://127.0.0.1:9080/?qa=1" >/tmp/chrome-shot.log 2>&1
             test -s "$RUNNER_TEMP/gulangyu-homepage.png"
             echo "Gulangyu homepage rendered with core sections and screenshot captured."
           else
