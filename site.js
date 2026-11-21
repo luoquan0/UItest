@@ -16,6 +16,7 @@ const serviceCopy={
 };
 function hidePreloader(){const p=$("#preloader"),bar=$("#preloader-bar");if(bar)bar.style.width="100%";setTimeout(()=>p&&p.classList.add("done"),650)}
 window.addEventListener("load",hidePreloader);setTimeout(hidePreloader,2300);
+if(new URLSearchParams(location.search).has("qa")){const preloader=$("#preloader");if(preloader)preloader.classList.add("done")}
 const header=$("#site-header"),progress=$("#scroll-progress");let ticking=false;
 function onScroll(){const y=window.scrollY,doc=document.documentElement.scrollHeight-window.innerHeight;header&&header.classList.toggle("scrolled",y>40);if(progress)progress.style.width=(doc>0?y/doc*100:0)+"%";const hero=$("#hero-image");if(hero&&window.innerWidth>760)hero.style.transform="translate3d(0,"+Math.min(y*.16,115)+"px,0) scale(1.07)";ticking=false}
 window.addEventListener("scroll",()=>{if(!ticking){requestAnimationFrame(onScroll);ticking=true}},{passive:true});onScroll();
