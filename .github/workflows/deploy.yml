@@ -23,55 +23,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Validate website assets
+      - name: Validate offline notice
         run: |
-          node --check site.js
           test -s index.html
-          test -s site.css
-          test -s site.js
-          grep -q "GULANGYU" index.html
-          grep -q 'id="spots"' index.html
-          grep -q 'id="gallery"' index.html
-          grep -q 'id="island-story"' index.html
-          grep -q 'id="hero-particles"' index.html
-          grep -q 'id="water-canvas"' index.html
-          grep -q 'id="island-map"' index.html
-          grep -q 'id="island-film"' index.html
-          grep -q 'id="sound-toggle"' index.html
-          grep -q 'class="title-cn"' index.html
-          grep -q 'class="map-pin pin-sunlight active"' index.html
-          grep -q 'id="horizontal-track"' index.html
-          grep -q 'class="title-cn"' index.html
-          grep -q 'data-story-image' index.html
-      - name: Smoke-test rendered homepage
+          grep -q "网站已暂停访问" index.html
+          grep -q "noindex,nofollow" index.html
+      - name: Smoke-test offline notice
         run: |
-          CHROME="$(command -v google-chrome || command -v chromium || true)"
-          if [ -n "$CHROME" ]; then
-            python3 -m http.server 9080 >/tmp/gulangyu-server.log 2>&1 &
-            SERVER_PID=$!
-            trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
-            sleep 2
-            "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
-              --virtual-time-budget=6500 --dump-dom \
-              "http://127.0.0.1:9080/" > /tmp/gulangyu-dom.html 2>/tmp/chrome-stderr.log
-            grep -q "鼓浪屿" /tmp/gulangyu-dom.html
-            grep -q "必游景点" /tmp/gulangyu-dom.html
-            grep -q "游客服务" /tmp/gulangyu-dom.html
-            grep -q "循着海风" /tmp/gulangyu-dom.html
-            grep -q "沿着光影" /tmp/gulangyu-dom.html
-            grep -q "开启岛屿声音" /tmp/gulangyu-dom.html
-            grep -q "CHAPTER 01" /tmp/gulangyu-dom.html
-            cp /tmp/gulangyu-dom.html "$RUNNER_TEMP/gulangyu-dom.html"
-            if grep -q 'class="preloader done"' /tmp/gulangyu-dom.html; then echo "Intro preloader completed."; else echo "Preloader completion not observed in virtual-time dump."; fi
-            "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
-              --virtual-time-budget=6500 --hide-scrollbars --window-size=1440,1000 \
-              --screenshot="$RUNNER_TEMP/gulangyu-homepage.png" \
-              "http://127.0.0.1:9080/?qa=1" >/tmp/chrome-shot.log 2>&1
-            test -s "$RUNNER_TEMP/gulangyu-homepage.png"
-            echo "Gulangyu homepage rendered with core sections and screenshot captured."
-          else
-            echo "Headless Chrome unavailable; static syntax validation passed."
-          fi
+          python3 -m http.server 9080 >/tmp/offline-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          sleep 2
+          curl -fsS http://127.0.0.1:9080/ > /tmp/offline-page.html
+          grep -q "网站已暂停访问" /tmp/offline-page.html
+          echo "Offline notice is served as the public homepage."
       - name: Upload visual QA screenshot
         uses: actions/upload-artifact@v4
         with:
