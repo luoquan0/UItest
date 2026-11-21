@@ -26,7 +26,7 @@ $$('#main-nav a').forEach(a=>a.addEventListener("click",()=>{menu&&menu.classLis
 const navLinks=$$('#main-nav a');
 if("IntersectionObserver"in window){
  const navObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)navLinks.forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+entry.target.id))}),{rootMargin:"-38% 0px -52% 0px"});
- ["home","about","spots","journey","gallery","services"].forEach(id=>{const el=$("#"+id);if(el)navObserver.observe(el)});
+ ["home","about","spots","island-map","journey","island-film","gallery","services"].forEach(id=>{const el=$("#"+id);if(el)navObserver.observe(el)});
  const revealObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("visible");revealObserver.unobserve(entry.target)}}),{threshold:.12,rootMargin:"0px 0px -35px 0px"});
  $$(".reveal").forEach((el,i)=>{el.style.transitionDelay=(i%4)*65+"ms";revealObserver.observe(el)});
 }else $$(".reveal").forEach(el=>el.classList.add("visible"));
@@ -251,7 +251,7 @@ if(water&&!reduceMotion){
   document.addEventListener("visibilitychange",()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf)paintWater()});
  }
 }
-let audioContext=null,audioNodes=[],audioOn=false;
+let audioContext=null,audioNodes=[],audioOn=false,audioMaster=null;
 let phraseTimer=null;
 function startIslandSound(){
  const Ctx=window.AudioContext||window.webkitAudioContext;
@@ -259,7 +259,7 @@ function startIslandSound(){
  if(!audioContext)audioContext=new Ctx();
  audioContext.resume().then(()=>{
   if(audioOn)return;
-  const master=audioContext.createGain();master.gain.value=.0001;master.connect(audioContext.destination);
+  const master=audioContext.createGain();audioMaster=master;master.gain.value=.0001;master.connect(audioContext.destination);
   master.gain.setTargetAtTime(.15,audioContext.currentTime,1.0);
   const buffer=audioContext.createBuffer(1,audioContext.sampleRate*2,audioContext.sampleRate),data=buffer.getChannelData(0);
   for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.12;
@@ -286,9 +286,9 @@ function startIslandSound(){
 function stopIslandSound(){
  if(!audioContext||!audioOn)return;
  audioOn=false;if(phraseTimer){clearInterval(phraseTimer);phraseTimer=null}
- const master=audioNodes.find(n=>n&&n.gain&&n.gain.value!==undefined&&n.constructor&&n.constructor.name==="GainNode");
+ const master=audioMaster;
  if(master&&master.gain)master.gain.setTargetAtTime(.0001,audioContext.currentTime,.2);
- setTimeout(()=>{audioNodes.forEach(n=>{try{if(n.stop)n.stop()}catch(e){}try{n.disconnect()}catch(e){}});audioNodes=[];const b=$("#sound-toggle");if(b){b.classList.remove("playing");b.setAttribute("aria-pressed","false")}const label=$("#sound-label");if(label)label.textContent="开启岛屿声音"},850);
+ setTimeout(()=>{audioNodes.forEach(n=>{try{if(n.stop)n.stop()}catch(e){}try{n.disconnect()}catch(e){}});audioNodes=[];audioMaster=null;const b=$("#sound-toggle");if(b){b.classList.remove("playing");b.setAttribute("aria-pressed","false")}const label=$("#sound-label");if(label)label.textContent="开启岛屿声音"},850);
 }
 $("#sound-toggle")&&$("#sound-toggle").addEventListener("click",()=>audioOn?stopIslandSound():startIslandSound());
 ("click",()=>audioOn?stopIslandSound():startIslandSound());
