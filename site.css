@@ -155,3 +155,17 @@
  .story-sticky{position:relative;height:auto;min-height:620px}
  .story-image-stack{position:absolute}
 }
+
+
+/* Fine-pointer depth response for the scroll-story and destination cards */
+.story-image-stack{transform-style:preserve-3d;transition:transform .25s ease-out;will-change:transform}
+.story-card,.spot-card,.gallery-item{transform-style:preserve-3d}
+.spot-card{position:relative;transition:transform .25s ease-out}
+.spot-card:hover{transform:perspective(1000px) rotateX(var(--tilt-y,0deg)) rotateY(var(--tilt-x,0deg)) translateY(-4px)}
+.spot-card:before,.gallery-item:before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;background:radial-gradient(circle at var(--spot-x,50%) var(--spot-y,50%),rgba(255,255,255,.17),transparent 42%);transition:opacity .3s}
+.spot-card:hover:before,.gallery-item:hover:before{opacity:1}
+.gallery-item{transition:transform .25s ease-out}
+.gallery-item:hover{transform:perspective(1100px) rotateX(var(--tilt-y,0deg)) rotateY(var(--tilt-x,0deg)) translateY(-3px)}
+.story-image-stack{transform:perspective(1400px) rotateY(var(--story-px,0deg)) rotateX(var(--story-py,0deg)) scale(1.025)}
+@media(max-width:760px){.spot-card:hover,.gallery-item:hover{transform:none}.story-image-stack{transform:none}}
+@media(prefers-reduced-motion:reduce){.spot-card,.gallery-item,.story-image-stack{transform:none!important;transition:none!important}}
