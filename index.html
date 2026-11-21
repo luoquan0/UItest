@@ -16,13 +16,13 @@
 </header>
 <main>
 <section class="hero" id="home">
-<div class="hero-image" id="hero-image"></div><canvas class="hero-particles" id="hero-particles" aria-hidden="true"></canvas><div class="hero-shade"></div><div class="hero-grain"></div><div class="hero-sun"></div>
+<div class="hero-image" id="hero-image"></div><canvas class="water-canvas" id="water-canvas" aria-hidden="true"></canvas><canvas class="hero-particles" id="hero-particles" aria-hidden="true"></canvas><div class="hero-shade"></div><div class="hero-grain"></div><div class="hero-sun"></div>
 <div class="hero-copy">
 <p class="eyebrow"><span></span> XIAMEN · FUJIAN · CHINA</p>
-<h1 class="hero-title">鼓浪屿<i>GULANGYU</i></h1>
+<h1 class="hero-title"><span class="title-cn">鼓浪屿</span><i class="title-en">GULANGYU</i></h1>
 <p class="hero-subtitle">海上花园 <b>·</b> 万国建筑 <b>·</b> 音乐之岛</p>
 <p class="hero-description">一座把海风、建筑与琴声收藏起来的小岛。<br>沿着时光的巷道，遇见海上花园的浪漫与故事。</p>
-<div class="hero-cta"><a class="button button-light" href="#spots">↗　开启探索之旅</a><button class="button button-ghost" id="hero-film">▷　观看岛屿印象</button></div>
+<div class="hero-cta"><a class="button button-light" href="#spots">↗　开启探索之旅</a><button class="button button-ghost" id="hero-film">▷　观看岛屿印象</button><button class="button button-sound" id="sound-toggle" aria-pressed="false"><span class="sound-bars"><i></i><i></i><i></i><i></i></span><span id="sound-label">开启岛屿声音</span></button></div>
 </div>
 <div class="hero-side"><span>SCROLL TO DISCOVER</span><i></i><b>01 <small>/ 06</small></b></div>
 <div class="hero-bottom"><div class="hero-facts"><div><b>⌂</b><span>海上花园<small>GARDEN ON THE SEA</small></span></div><div><b>♫</b><span>音乐之岛<small>ISLAND OF MUSIC</small></span></div><div><b>◇</b><span>世界遗产<small>WORLD HERITAGE · 2017</small></span></div></div><a class="scroll-cue" href="#about"><i></i>向下探索　⌄</a><span class="hero-coordinate">24°26′N　118°04′E</span></div>
@@ -77,6 +77,13 @@
 <article class="spot-card reveal"><div class="spot-image"><img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Gulangyu_at_dusk.jpg" alt="黄昏时的鼓浪屿" loading="lazy"><span>05 / SEASIDE</span><b>↗</b></div><div class="spot-info"><div><h3>海岸漫步</h3><p>迎着海风走一段，把日落留给自己。</p></div><small>COASTAL WALK</small></div></article>
 </div></div><div class="spot-progress"><i id="spot-progress-fill"></i></div><p class="section-footnote">景点开放情况、参观安排及现场导览，请以景区官方发布为准。</p>
 </section>
+<section class="map-section section-pad" id="island-map">
+<div class="section-kicker"><span>04</span><i></i> EXPLORE THE ISLAND</div>
+<div class="section-heading reveal"><div><p class="overline">A LITTLE ISLAND, MANY STORIES</p><h2>循着海风，<em>找到心动坐标。</em></h2></div><p class="gallery-heading-note">选择地图上的地点，<br>发现鼓浪屿的不同侧面。</p></div>
+<div class="map-explorer reveal"><div class="map-art" id="map-art">
+<svg viewBox="0 0 900 540" role="img" aria-label="鼓浪屿景点分布示意地图"><defs><linearGradient id="landFill" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d7c7a6"/><stop offset="1" stop-color="#a8b8a0"/></linearGradient><pattern id="mapGrid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#718d87" stroke-opacity=".14"/></pattern></defs><rect width="900" height="540" fill="#c9d8d3"/><rect width="900" height="540" fill="url(#mapGrid)"/><path d="M0 60Q90 88 170 42T330 68T490 46T660 80T900 38V0H0Z" fill="#a9c9c5" opacity=".55"/><path d="M88 250C113 178 185 145 250 124c83-26 133-4 192-23 71-23 111 11 169 43 70 39 102 93 83 157-15 52-58 81-112 107-71 34-115 22-185 42-67 20-131 12-198-17-71-30-144-108-111-183Z" fill="url(#landFill)" stroke="#718e7d" stroke-width="3"/><path d="M126 272c87-50 112-65 177-60s83 47 152 29 91-48 148-13 69 62 97 99M163 345c64-48 117-35 174-6s108 22 151-7 100-42 154-8M267 174c-5 55 31 82 21 131s-9 76 33 111M458 126c-34 56-23 93 9 126s42 70 20 123" fill="none" stroke="#f4eee1" stroke-width="9" stroke-linecap="round"/><g fill="#66856f" opacity=".65"><circle cx="213" cy="215" r="14"/><circle cx="238" cy="199" r="10"/><circle cx="620" cy="253" r="15"/><circle cx="651" cy="270" r="10"/><circle cx="360" cy="397" r="12"/><circle cx="388" cy="406" r="9"/><circle cx="518" cy="164" r="12"/></g><g fill="#7c6a56" font-family="Arial,sans-serif" font-size="12" letter-spacing="2"><text x="72" y="70">XIAMEN BAY</text><text x="700" y="505">SOUTH CHINA SEA</text><text x="340" y="287" font-size="18" letter-spacing="5">鼓 浪 屿</text><text x="340" y="310" font-size="9" letter-spacing="3">GULANGYU ISLAND</text></g></svg>
+<button class="map-pin pin-sunlight active" data-map="0"><i></i><span>日光岩</span></button><button class="map-pin pin-shuzhuang" data-map="1"><i></i><span>菽庄花园</span></button><button class="map-pin pin-piano" data-map="2"><i></i><span>钢琴博物馆</span></button><button class="map-pin pin-villas" data-map="3"><i></i><span>历史建筑群</span></button><span class="map-compass">N <b>↑</b></span><span class="map-scale">ILLUSTRATIVE MAP · NOT FOR NAVIGATION</span>
+</div><aside class="map-detail" id="map-detail"><p class="overline">01 / HIGH POINT</p><h3>日光岩</h3><p>登高望远，感受岛屿与海湾的开阔视野。这里是认识鼓浪屿地貌与城市天际线的经典视角。</p><a href="#spots">查看景点介绍 ↗</a><small>位置与步行路线为艺术示意，请以现场导览为准。</small></aside></div></section>
 <section class="journey-section" id="journey"><div class="journey-bg"></div><div class="journey-content section-pad">
 <div class="section-kicker light-kicker"><span>03</span><i></i> A DAY ON THE ISLAND</div>
 <div class="journey-heading reveal"><p class="overline">WANDER WITHOUT RUSH</p><h2>把一天，<em>交给鼓浪屿。</em></h2><p>沿着一条轻松的步行思路，串起山海、庭院与音乐。路线仅作灵感参考，实际步行顺序请结合现场指引。</p></div>
@@ -84,6 +91,14 @@
 <div class="route-steps"><button class="route-step active reveal" data-route="0"><span>01</span><small>上午 · 登高</small><strong>日光岩</strong><i>俯瞰岛屿与海湾</i></button><button class="route-step reveal" data-route="1"><span>02</span><small>午后 · 漫游</small><strong>菽庄花园</strong><i>园林与海景相逢</i></button><button class="route-step reveal" data-route="2"><span>03</span><small>下午 · 听琴</small><strong>钢琴博物馆</strong><i>感受岛屿音乐文化</i></button><button class="route-step reveal" data-route="3"><span>04</span><small>傍晚 · 看海</small><strong>海岸漫步</strong><i>把日落留在记忆里</i></button></div>
 <div class="route-detail reveal" id="route-detail"><span class="route-detail-number">01</span><div><small>YOUR ISLAND MOMENT</small><h3>从日光岩开始，遇见开阔的海。</h3><p>登高、远眺、感受海风，让旅程从岛屿的高处缓缓展开。</p></div><b>↗</b></div>
 </div></section>
+<section class="horizontal-film" id="island-film" aria-label="鼓浪屿影像长卷"><div class="horizontal-sticky"><div class="horizontal-track" id="horizontal-track">
+<div class="film-intro"><p class="overline">A CINEMATIC WALK</p><h2>沿着光影，<br><em>漫游鼓浪屿。</em></h2><span>SCROLL TO TRAVEL THROUGH THE ISLAND →</span></div>
+<figure class="film-frame"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Gulangyu.jpg" alt="鼓浪屿红瓦历史建筑" loading="lazy"><figcaption><small>01 / ARCHITECTURE</small><b>红瓦与旧时光</b></figcaption></figure>
+<figure class="film-frame film-tall"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Shuzhuang_garden.jpg" alt="菽庄花园" loading="lazy"><figcaption><small>02 / GARDEN</small><b>庭院与海风</b></figcaption></figure>
+<figure class="film-frame"><img src="https://upload.wikimedia.org/wikipedia/commons/0/01/Gu_Lang_Yu_Piano_Museum_20161231.jpg" alt="钢琴博物馆" loading="lazy"><figcaption><small>03 / MUSIC</small><b>琴岛的回响</b></figcaption></figure>
+<figure class="film-frame film-tall"><img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Gulangyu_at_dusk.jpg" alt="鼓浪屿黄昏海景" loading="lazy"><figcaption><small>04 / SEA</small><b>暮色与潮汐</b></figcaption></figure>
+<div class="film-end"><span>GULANGYU · XIAMEN</span><strong>THE ENDLESS<br>ISLAND MOMENT.</strong><a href="#services">计划你的旅程 ↗</a></div>
+</div><div class="film-progress"><i id="film-progress-fill"></i></div></div></section>
 <section class="gallery-section section-pad" id="gallery">
 <div class="section-kicker"><span>04</span><i></i> VISUAL JOURNAL</div>
 <div class="section-heading reveal"><div><p class="overline">POSTCARDS FROM GULANGYU</p><h2>把海岛的美，<em>收藏起来。</em></h2></div><p class="gallery-heading-note">建筑的轮廓、庭院的光影、<br>还有海面上缓慢移动的时间。</p></div>
