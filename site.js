@@ -62,4 +62,109 @@ const searchItems=[["日光岩","spots"],["菽庄花园","spots"],["钢琴博物
 function renderSearch(q=""){if(!searchResults)return;const results=searchItems.filter(x=>x[0].toLowerCase().includes(q.toLowerCase()));searchResults.innerHTML=results.length?results.map(x=>'<button data-target="'+x[1]+'">'+x[0]+'　↗</button>').join(""):"没有找到相关内容";searchResults.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{closeSearch();document.getElementById(b.dataset.target)?.scrollIntoView({behavior:"smooth"})}))}
 searchInput&&searchInput.addEventListener("input",e=>renderSearch(e.target.value));renderSearch();
 $$("img").forEach(img=>img.addEventListener("error",()=>{img.style.opacity=".25";img.alt=img.alt+"（图片暂时无法加载）"}));
+
+/* Cinematic A+B+C upgrade: pointer depth, ambient particles, pinned scroll story. */
+const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const hero=$("#home"),heroImage=$("#hero-image"),heroCopy=$(".hero-copy"),heroSun=$(".hero-sun");
+let pointerFrame=0,mouseX=0,mouseY=0;
+if(hero&&!reduceMotion&&window.matchMedia("(pointer:fine)").matches){
+ hero.addEventListener("pointermove",e=>{
+  const r=hero.getBoundingClientRect();mouseX=(e.clientX-r.left)/r.width-.5;mouseY=(e.clientY-r.top)/r.height-.5;
+  if(pointerFrame)return;
+  pointerFrame=requestAnimationFrame(()=>{
+   const sy=Math.min(window.scrollY*.16,115);
+   if(heroImage)heroImage.style.transform="translate3d("+(mouseX*-13)+"px,"+(sy+mouseY*-9)+"px,0) scale(1.07)";
+   if(heroCopy)heroCopy.style.transform="translate3d("+(mouseX*-10)+"px,"+(mouseY*-7)+"px,32px)";
+   if(heroSun)heroSun.style.transform="translate3d("+(mouseX*22)+"px,"+(mouseY*16)+"px,0) scale(1.06)";
+   $$(".hero-orbit").forEach((el,i)=>el.style.transform="translate3d("+(mouseX*(i?18:-11))+"px,"+(mouseY*(i?12:-8))+"px,0) rotate("+(i?-30:20)+"deg)");
+   pointerFrame=0;
+  });
+ });
+ hero.addEventListener("pointerleave",()=>{
+  if(heroImage)heroImage.style.transform="translate3d(0,"+Math.min(window.scrollY*.16,115)+"px,0) scale(1.07)";
+  if(heroCopy)heroCopy.style.transform="translate3d(0,0,32px)";
+  if(heroSun)heroSun.style.transform="";
+  $$(".hero-orbit").forEach(el=>el.style.transform="");
+ });
+}
+const particleCanvas=$("#hero-particles");
+if(particleCanvas&&!reduceMotion){
+ const ctx=particleCanvas.getContext("2d");
+ if(ctx){
+  let w=0,h=0,dpr=1,particles=[],raf=0;
+  const count=window.innerWidth<760?18:42;
+  const resize=()=>{
+   const r=hero.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,1.5);w=r.width;h=r.height;
+   particleCanvas.width=Math.round(w*dpr);particleCanvas.height=Math.round(h*dpr);
+   particleCanvas.style.width=w+"px";particleCanvas.style.height=h+"px";ctx.setTransform(dpr,0,0,dpr,0,0);
+   particles=Array.from({length:count},()=>({x:Math.random()*w,y:Math.random()*h,r:.5+Math.random()*1.4,vx:(Math.random()-.5)*.13,vy:-.08-Math.random()*.18,a:.15+Math.random()*.45,phase:Math.random()*6.28}));
+  };
+  const draw=()=>{
+   ctx.clearRect(0,0,w,h);
+   for(const p of particles){
+    p.x+=p.vx;p.y+=p.vy;p.phase+=.012;
+    if(p.y<-8){p.y=h+8;p.x=Math.random()*w}
+    if(p.x<-8)p.x=w+8;if(p.x>w+8)p.x=-8;
+    const alpha=p.a*(.7+.3*Math.sin(p.phase));
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle="rgba(244,218,174,"+alpha+")";ctx.fill();
+   }
+   raf=requestAnimationFrame(draw);
+  };
+  resize();draw();window.addEventListener("resize",resize,{passive:true});
+  document.addEventListener("visibilitychange",()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf)draw()});
+ }
+}
+const story=$("#island-story"),storyImages=$$("[data-story-image]"),storyDots=$$("[data-story]");
+const storyChapters=[
+ {kicker:"CHAPTER 01 · THE SEA BREEZE",title:"海风入巷，<br><em>时光慢了下来。</em>",copy:"潮声沿着石阶轻轻漫上来。穿过树影与老墙，岛屿的故事，从一阵海风开始。"},
+ {kicker:"CHAPTER 02 · ARCHITECTURE & MEMORY",title:"百年建筑，<br><em>收藏城市的回声。</em>",copy:"拱廊、红瓦、窗棂与庭院，来自不同年代的建筑在岛上相遇，留下多元文化交汇的生活印记。"},
+ {kicker:"CHAPTER 03 · THE ISLAND OF MUSIC",title:"琴声响起，<br><em>整座岛都有了旋律。</em>",copy:"从钢琴收藏到街巷里的音乐记忆，鼓浪屿的浪漫不只在海边，也藏在每一次轻轻响起的琴声里。"}
+];
+let storyActive=-1,storyTick=false;
+function setStoryChapter(index){
+ if(!story||index===storyActive)return;
+ storyActive=index;
+ storyImages.forEach((img,i)=>img.classList.toggle("active",i===index));
+ storyDots.forEach((dot,i)=>dot.classList.toggle("active",i===index));
+ const chapter=storyChapters[index],copy=$("#story-copy");
+ if(copy){
+  copy.innerHTML='<p class="story-chapter">'+chapter.kicker+'</p><h2>'+chapter.title+'</h2><p>'+chapter.copy+'</p>';
+  copy.classList.remove("story-copy");void copy.offsetWidth;copy.classList.add("story-copy");
+ }
+ const number=String(index+1).padStart(2,"0");
+ if($("#story-index"))$("#story-index").textContent=number+" / 03";
+ if($("#story-counter-big"))$("#story-counter-big").textContent=number;
+}
+function updateStory(){
+ if(!story||reduceMotion)return;
+ const rect=story.getBoundingClientRect(),range=story.offsetHeight-window.innerHeight;
+ const progress=Math.max(0,Math.min(1,-rect.top/Math.max(1,range)));
+ const index=Math.min(2,Math.floor(progress*3.001));
+ setStoryChapter(index);
+ const active=storyImages[index];
+ if(active){const offset=(progress*2-1)*13;active.style.transform="translate3d(0,"+offset+"px,0) scale(1.035)"}
+ storyTick=false;
+}
+if(story&&!reduceMotion){
+ window.addEventListener("scroll",()=>{if(!storyTick){requestAnimationFrame(updateStory);storyTick=true}},{passive:true});
+ window.addEventListener("resize",updateStory,{passive:true});
+ updateStory();
+ storyDots.forEach(dot=>dot.addEventListener("click",()=>{
+  const i=Number(dot.dataset.story),range=story.offsetHeight-window.innerHeight;
+  const y=story.offsetTop+(range*(i+.48)/3);
+  window.scrollTo({top:y,behavior:"smooth"});
+ }));
+}else if(story){setStoryChapter(0)}
+if(!reduceMotion&&window.matchMedia("(pointer:fine)").matches){
+ $$(".spot-card,.gallery-item").forEach(card=>{
+  card.addEventListener("pointermove",e=>{
+   const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+   card.style.setProperty("--tilt-x",(x*3.2).toFixed(2)+"deg");
+   card.style.setProperty("--tilt-y",(y*-3.2).toFixed(2)+"deg");
+   card.style.setProperty("--spot-x",(x*100+50)+"%");
+   card.style.setProperty("--spot-y",(y*100+50)+"%");
+  });
+  card.addEventListener("pointerleave",()=>{card.style.setProperty("--tilt-x","0deg");card.style.setProperty("--tilt-y","0deg")});
+ });
+}
 })();
