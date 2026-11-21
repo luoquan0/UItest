@@ -1,4 +1,4 @@
-name: Deploy static prototype to GitHub Pages
+name: Deploy Gulangyu tourism website to GitHub Pages
 
 on:
   push:
@@ -18,32 +18,37 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: \${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Validate V2 preview JavaScript
+      - name: Validate website assets
         run: |
-          node --check v2-preview.js
-          test -s v2-preview.html
-          test -s v2-preview.css
-      - name: Smoke-test preview page
+          node --check site.js
+          test -s index.html
+          test -s site.css
+          test -s site.js
+          grep -q "GULANGYU" index.html
+          grep -q 'id="spots"' index.html
+          grep -q 'id="gallery"' index.html
+      - name: Smoke-test rendered homepage
         run: |
           CHROME="$(command -v google-chrome || command -v chromium || true)"
           if [ -n "$CHROME" ]; then
-            python3 -m http.server 9080 >/tmp/preview-server.log 2>&1 &
+            python3 -m http.server 9080 >/tmp/gulangyu-server.log 2>&1 &
             SERVER_PID=$!
             trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
             sleep 2
             "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage \
-              --virtual-time-budget=2000 --dump-dom \
-              "http://127.0.0.1:9080/v2-preview.html" > /tmp/preview-dom.html 2>/tmp/chrome-stderr.log
-            grep -q "让智慧，融入每一次" /tmp/preview-dom.html
-            grep -q 'class="nav-item' /tmp/preview-dom.html
-            echo "V2 preview rendered without blank main content."
+              --virtual-time-budget=2500 --dump-dom \
+              "http://127.0.0.1:9080/" > /tmp/gulangyu-dom.html 2>/tmp/chrome-stderr.log
+            grep -q "鼓浪屿" /tmp/gulangyu-dom.html
+            grep -q "必游景点" /tmp/gulangyu-dom.html
+            grep -q "游客服务" /tmp/gulangyu-dom.html
+            echo "Gulangyu homepage rendered with core sections."
           else
-            echo "Headless Chrome unavailable; static syntax validation still passed."
+            echo "Headless Chrome unavailable; static syntax validation passed."
           fi
       - name: Configure Pages
         uses: actions/configure-pages@v5
