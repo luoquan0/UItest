@@ -1,5 +1,4 @@
 
-@import url(''); 
 :root{--ink:#081b2b;--ink2:#0c263b;--deep:#061523;--blue:#143d59;--sea:#176b82;--aqua:#7ed2d0;--gold:#e6bd7a;--cream:#f4efe5;--paper:#f7f4ed;--text:#f8f3e9;--muted:#b8c4c6;--darktext:#183044;--ease:cubic-bezier(.2,.75,.25,1);--slow:cubic-bezier(.16,1,.3,1)}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}body{margin:0;background:var(--paper);color:var(--darktext);font-family:"Palatino Linotype","Noto Serif CJK SC","Songti SC","STSong",serif;overflow-x:hidden}button,a{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}img{display:block;width:100%;height:100%;object-fit:cover}::selection{background:var(--gold);color:var(--ink)}
 .scroll-progress{position:fixed;z-index:200;left:0;top:0;width:0;height:2px;background:linear-gradient(90deg,#d9b777,#fff0c8);box-shadow:0 0 12px #e7c98c;transition:width .08s linear}
