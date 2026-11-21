@@ -59,7 +59,7 @@ const searchPanel=$("#search-panel"),searchInput=$("#site-search"),searchResults
 function openSearch(){searchPanel&&searchPanel.classList.add("open");searchPanel&&searchPanel.setAttribute("aria-hidden","false");setTimeout(()=>searchInput&&searchInput.focus(),150)}
 function closeSearch(){searchPanel&&searchPanel.classList.remove("open");searchPanel&&searchPanel.setAttribute("aria-hidden","true");if(!$("#lightbox")?.classList.contains("open")&&!dialog?.classList.contains("open"))document.body.style.overflow=""}
 $("#search-open")&&$("#search-open").addEventListener("click",openSearch);$("#search-close")&&$("#search-close").addEventListener("click",closeSearch);
-const searchItems=[["日光岩","spots"],["菽庄花园","spots"],["钢琴博物馆","spots"],["万国建筑","spots"],["景区介绍","about"],["游玩攻略","journey"],["影像画廊","gallery"],["游客服务","services"],["轮渡与交通","services"],["门票与预约","services"]];
+const searchItems=[["日光岩","spots"],["菽庄花园","spots"],["钢琴博物馆","spots"],["万国建筑","spots"],["景区介绍","about"],["互动地图","island-map"],["游玩攻略","journey"],["影像长卷","island-film"],["影像画廊","gallery"],["游客服务","services"],["轮渡与交通","services"],["门票与预约","services"]];
 function renderSearch(q=""){if(!searchResults)return;const results=searchItems.filter(x=>x[0].toLowerCase().includes(q.toLowerCase()));searchResults.innerHTML=results.length?results.map(x=>'<button data-target="'+x[1]+'">'+x[0]+'　↗</button>').join(""):"没有找到相关内容";searchResults.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{closeSearch();document.getElementById(b.dataset.target)?.scrollIntoView({behavior:"smooth"})}))}
 searchInput&&searchInput.addEventListener("input",e=>renderSearch(e.target.value));renderSearch();
 $$("img").forEach(img=>img.addEventListener("error",()=>{img.style.opacity=".25";img.alt=img.alt+"（图片暂时无法加载）"}));
@@ -252,6 +252,7 @@ if(water&&!reduceMotion){
  }
 }
 let audioContext=null,audioNodes=[],audioOn=false;
+let phraseTimer=null;
 function startIslandSound(){
  const Ctx=window.AudioContext||window.webkitAudioContext;
  if(!Ctx){toast("当前浏览器不支持网页音效");return}
@@ -259,27 +260,37 @@ function startIslandSound(){
  audioContext.resume().then(()=>{
   if(audioOn)return;
   const master=audioContext.createGain();master.gain.value=.0001;master.connect(audioContext.destination);
-  const now=audioContext.currentTime;master.gain.setTargetAtTime(.11,now,1.1);
-  const notes=[220,261.63,329.63,392];
-  notes.forEach((hz,i)=>{
-   const osc=audioContext.createOscillator(),gain=audioContext.createGain(),filter=audioContext.createBiquadFilter();
-   osc.type="sine";osc.frequency.value=hz;gain.gain.value=[.13,.09,.065,.045][i];filter.type="lowpass";filter.frequency.value=760;
-   osc.connect(filter);filter.connect(gain);gain.connect(master);osc.start();audioNodes.push(osc,gain,filter);
-  });
+  master.gain.setTargetAtTime(.15,audioContext.currentTime,1.0);
   const buffer=audioContext.createBuffer(1,audioContext.sampleRate*2,audioContext.sampleRate),data=buffer.getChannelData(0);
   for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.12;
   const noise=audioContext.createBufferSource(),low=audioContext.createBiquadFilter(),noiseGain=audioContext.createGain();
-  noise.buffer=buffer;noise.loop=true;low.type="lowpass";low.frequency.value=330;noiseGain.gain.value=.16;
-  noise.connect(low);low.connect(noiseGain);noiseGain.connect(master);noise.start();audioNodes.push(noise,low,noiseGain,master);
-  audioOn=true;const b=$("#sound-toggle");if(b){b.classList.add("playing");b.setAttribute("aria-pressed","true")}const label=$("#sound-label");if(label)label.textContent="关闭岛屿声音";
+  noise.buffer=buffer;noise.loop=true;low.type="lowpass";low.frequency.value=390;noiseGain.gain.value=.1;
+  noise.connect(low);low.connect(noiseGain);noiseGain.connect(master);noise.start();
+  audioNodes=[noise,low,noiseGain,master];audioOn=true;
+  const notes=[392,493.88,587.33,493.88,440,392,329.63,392,440,523.25,493.88,392];
+  let noteIndex=0;
+  const playNote=()=>{
+   if(!audioOn||!audioContext)return;
+   const now=audioContext.currentTime,hz=notes[noteIndex%notes.length];
+   const osc=audioContext.createOscillator(),gain=audioContext.createGain(),tone=audioContext.createBiquadFilter();
+   osc.type="triangle";osc.frequency.setValueAtTime(hz,now);tone.type="lowpass";tone.frequency.setValueAtTime(2300,now);
+   gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.075,now+.018);gain.gain.exponentialRampToValueAtTime(.0001,now+1.15);
+   osc.connect(tone);tone.connect(gain);gain.connect(master);osc.start(now);osc.stop(now+1.2);
+   audioNodes.push(osc,tone,gain);if(audioNodes.length>48)audioNodes=audioNodes.slice(-18);noteIndex++;
+  };
+  playNote();phraseTimer=setInterval(playNote,560);
+  const b=$("#sound-toggle");if(b){b.classList.add("playing");b.setAttribute("aria-pressed","true")}
+  const label=$("#sound-label");if(label)label.textContent="关闭岛屿声音";
  }).catch(()=>toast("音频启动失败，请再次点击"));
 }
 function stopIslandSound(){
  if(!audioContext||!audioOn)return;
- const master=audioNodes[audioNodes.length-1],now=audioContext.currentTime;
- if(master&&master.gain)master.gain.setTargetAtTime(.0001,now,.18);
- setTimeout(()=>{audioNodes.forEach(n=>{try{if(n.stop)n.stop()}catch(e){}try{n.disconnect()}catch(e){}});audioNodes=[];audioOn=false;const b=$("#sound-toggle");if(b){b.classList.remove("playing");b.setAttribute("aria-pressed","false")}const label=$("#sound-label");if(label)label.textContent="开启岛屿声音"},900);
+ audioOn=false;if(phraseTimer){clearInterval(phraseTimer);phraseTimer=null}
+ const master=audioNodes.find(n=>n&&n.gain&&n.gain.value!==undefined&&n.constructor&&n.constructor.name==="GainNode");
+ if(master&&master.gain)master.gain.setTargetAtTime(.0001,audioContext.currentTime,.2);
+ setTimeout(()=>{audioNodes.forEach(n=>{try{if(n.stop)n.stop()}catch(e){}try{n.disconnect()}catch(e){}});audioNodes=[];const b=$("#sound-toggle");if(b){b.classList.remove("playing");b.setAttribute("aria-pressed","false")}const label=$("#sound-label");if(label)label.textContent="开启岛屿声音"},850);
 }
 $("#sound-toggle")&&$("#sound-toggle").addEventListener("click",()=>audioOn?stopIslandSound():startIslandSound());
+("click",()=>audioOn?stopIslandSound():startIslandSound());
 
 })();
