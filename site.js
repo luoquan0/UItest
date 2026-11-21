@@ -275,8 +275,8 @@ function startIslandSound(){
    const osc=audioContext.createOscillator(),gain=audioContext.createGain(),tone=audioContext.createBiquadFilter();
    osc.type="triangle";osc.frequency.setValueAtTime(hz,now);tone.type="lowpass";tone.frequency.setValueAtTime(2300,now);
    gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.075,now+.018);gain.gain.exponentialRampToValueAtTime(.0001,now+1.15);
-   osc.connect(tone);tone.connect(gain);gain.connect(master);osc.start(now);osc.stop(now+1.2);
-   audioNodes.push(osc,tone,gain);if(audioNodes.length>48)audioNodes=audioNodes.slice(-18);noteIndex++;
+   osc.connect(tone);tone.connect(gain);gain.connect(master);osc.onended=()=>{try{osc.disconnect();tone.disconnect();gain.disconnect()}catch(e){}};osc.start(now);osc.stop(now+1.2);
+   noteIndex++;
   };
   playNote();phraseTimer=setInterval(playNote,560);
   const b=$("#sound-toggle");if(b){b.classList.add("playing");b.setAttribute("aria-pressed","true")}
@@ -288,7 +288,7 @@ function stopIslandSound(){
  audioOn=false;if(phraseTimer){clearInterval(phraseTimer);phraseTimer=null}
  const master=audioMaster;
  if(master&&master.gain)master.gain.setTargetAtTime(.0001,audioContext.currentTime,.2);
- setTimeout(()=>{audioNodes.forEach(n=>{try{if(n.stop)n.stop()}catch(e){}try{n.disconnect()}catch(e){}});audioNodes=[];audioMaster=null;const b=$("#sound-toggle");if(b){b.classList.remove("playing");b.setAttribute("aria-pressed","false")}const label=$("#sound-label");if(label)label.textContent="开启岛屿声音"},850);
+ setTimeout(()=>{audioNodes.forEach(n=>{try{if(n.stop)n.stop()}catch(e){}try{n.disconnect()}catch(e){}});audioNodes=[];if(audioMaster){try{audioMaster.disconnect()}catch(e){}}audioMaster=null;const b=$("#sound-toggle");if(b){b.classList.remove("playing");b.setAttribute("aria-pressed","false")}const label=$("#sound-label");if(label)label.textContent="开启岛屿声音"},850);
 }
 $("#sound-toggle")&&$("#sound-toggle").addEventListener("click",()=>audioOn?stopIslandSound():startIslandSound());
 ("click",()=>audioOn?stopIslandSound():startIslandSound());
