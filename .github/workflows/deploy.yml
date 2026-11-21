@@ -39,6 +39,9 @@ jobs:
           grep -q 'id="island-film"' index.html
           grep -q 'id="sound-toggle"' index.html
           grep -q 'class="title-cn"' index.html
+          grep -q 'class="map-pin pin-sunlight active"' index.html
+          grep -q 'id="horizontal-track"' index.html
+          grep -q 'class="title-cn"' index.html
           grep -q 'data-story-image' index.html
       - name: Smoke-test rendered homepage
         run: |
@@ -56,6 +59,7 @@ jobs:
             grep -q "游客服务" /tmp/gulangyu-dom.html
             grep -q "循着海风" /tmp/gulangyu-dom.html
             grep -q "沿着光影" /tmp/gulangyu-dom.html
+            grep -q "开启岛屿声音" /tmp/gulangyu-dom.html
             grep -q "CHAPTER 01" /tmp/gulangyu-dom.html
             cp /tmp/gulangyu-dom.html "$RUNNER_TEMP/gulangyu-dom.html"
             if grep -q 'class="preloader done"' /tmp/gulangyu-dom.html; then echo "Intro preloader completed."; else echo "Preloader completion not observed in virtual-time dump."; fi
